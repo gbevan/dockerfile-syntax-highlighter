@@ -1,0 +1,43 @@
+/*
+ * Place CSS here
+ */
+
+.cm-dockdir {
+  color: aqua;
+}
+
+.cm-from {
+  background-color: #48489a;
+  border: 1px yellow solid;
+  border-radius: 3px;
+  color: white;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+.cm-maintainer {
+  background-color: #48489a;
+  border: 1px yellow solid;
+  border-radius: 3px;
+  color: white;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+.cm-expose {
+  background-color: #fff500;
+  border: 1px red solid;
+  border-radius: 3px;
+  color: black;
+  font-weight: bold;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+.cm-debug1 {
+  color: red;
+}
+
+.cm-debug2 {
+  color: #b90000;
+}

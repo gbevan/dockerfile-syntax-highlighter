@@ -1,0 +1,25 @@
+{
+  "name": "dockerfile-syntax-highlighter",
+  "title": "Another Dockerfile Syntax Highlighter",
+  "description": "Simple Syntax highlighting for Dockerfiles.",
+  "homepage": "https://github.com/gbevan/dockerfile-syntax-highlighter",
+  "keywords": [
+    "docker",
+    "dockerfile",
+    "syntax",
+    "highlighting"
+  ],
+  "version": "0.1.0",
+  "author": {
+    "name": "Graham Lee Bevan",
+    "email": "graham.bevan@ntlworld.com",
+    "url": "https://github.com/gbevan/dockerfile-syntax-highlighter"
+  },
+  "licenses": [{
+    "type": "Apache 2.0",
+    "url": "http://www.apache.org/licenses/"
+  }],
+  "engines": {
+    "brackets": ">=1.0.0"
+  }
+}
