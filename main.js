@@ -79,7 +79,7 @@ define(function (require, exports, module) {
           }
         }
 
-      } // !state.inDirective
+      }
 
 
       // eat the rest
