@@ -1,7 +1,7 @@
 {
   "name": "dockerfile-syntax-highlighter",
-  "title": "Another Dockerfile Syntax Highlighter",
-  "description": "Simple Syntax highlighting for Dockerfiles.",
+  "title": "Enhanced Dockerfile Syntax Highlighter with nested Shell highlighting",
+  "description": "Enhanced Dockerfile Syntax Highlighter with nested Shell highlighting.",
   "homepage": "https://github.com/gbevan/dockerfile-syntax-highlighter",
   "keywords": [
     "docker",
