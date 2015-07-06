@@ -33,6 +33,22 @@ define(function (require, exports, module) {
         return res;
       }
 
+      if (state.inAssignment) {
+        stream.eatSpace();
+        stream.eat(/[=]/);
+        stream.eatSpace();
+        state.inAssignment = false;
+        state.inDirective = true;
+        return null;
+      }
+
+      if (state.inEnv) {
+        stream.eatWhile(/\w/);
+        state.inEnv = false;
+        state.inAssignment = true;
+        return 'def';
+      }
+
       if (state.inDirective) {
         // eat lines, allowed escaped eols
         ch = stream.next();
@@ -68,9 +84,13 @@ define(function (require, exports, module) {
               stream.eatSpace();
             }
             if (!stream.eol()) {
-              if (dirMatch[1].match(/RUN|CMD/)) {
+              if (dirMatch[1].match(/RUN|CMD/i)) {
                 state.localMode = bashMode;
                 state.localState = bashMode.startState();
+
+              } else if (dirMatch[1].match(/ENV/i)) {
+                state.inEnv = true;
+
               } else {
                 state.inDirective = true;
               }
@@ -93,6 +113,8 @@ define(function (require, exports, module) {
         var state = {};
 
         state.inDirective = false;
+        state.inEnv = false;
+        state.inAssignment = false;
         state.localMode = null;
         state.localState = null;
 
