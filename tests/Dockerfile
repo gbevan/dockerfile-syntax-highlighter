@@ -5,14 +5,13 @@
 #
 
 FROM ubuntu:latest
-MAINTAINER Graham Bevan "graham.bevan@ntlworld.com"
+MAINTAINER Your name "you@example.com"
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND noninteractive # comment
 ENV LANG=C
 ENV LC_ALL=C
-
-#RUN get run add
-#run add get run
+ENV ABC=123 DEF=567
+ENV GHI="data spaces" JKL="uck"   # comment
 
 # Dependencies
 RUN \
@@ -26,7 +25,7 @@ RUN \
     sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config && \
     useradd --create-home -s /bin/bash mean && \
     su - mean -c "mkdir -p .ssh; chmod 700 .ssh" && \
-    echo -n 'mean:mean' | chpasswd && \
+    echo -n "mean:`openssl rand -base64 15`" | chpasswd && \
     su - mean -c "touch .hushlogin" && \
     mkdir -p /etc/sudoers.d && \
     echo "mean ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/mean && \
@@ -69,12 +68,58 @@ RUN \
     (killall mongod 2>/dev/null || true) && sleep 10 && (killall -9 mongod 2>/dev/null || true) && sleep 5 && \
     rm -rf /var/lib/mongodb/* /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-CMD ls -la > testfile.txt; cat boox
-RUN dfgdfg; cat
+CMD cat /etc/motd
+CMD \
+  cat /etc/motd; \
+  cat /something
+
+CMD ["executable", "param1", "param2"]
+CMD echo "This is a test." | wc -
 
 ADD start-image.sh /
+
+COPY a b
+COPY hom* /mydir/
+
+USER daemon
+
+WORKDIR /path/to/workdir
+
+ONBUILD ADD . /app/src
+ONBUILD RUN /usr/local/bin/python-build --dir /app/src
+
+VOLUME /myvol
+VOLUME ["/data"]
+VOLUME /var/log /var/db
 
 #CMD ["/usr/sbin/sshd", "-D", "-e"]
 ENTRYPOINT ["/bin/bash", "/start-image.sh"]
 
-EXPOSE 22 3000
+EXPOSE 3000 3443
+
+LABEL "abcdfefsdf" = "this is a string" # comment
+LABEL 'this is another' = skdfsldkfj
+LABEL "this ''''' is a string" = yup
+LABEL "this \"
+is error"
+
+LABEL "this \
+is multiline"
+
+LABEL "this is error
+on multiline"
+
+LABELthis is an error and therefore in red
+LABEL "com.example.vendor"="ACME Incorporated"
+LABEL com.example.label-with-value="foo"
+LABEL version="1.0"
+LABEL description="This text illustrates \
+that label-values can span multiple lines."
+LABEL "this is a multiline \
+thang" = 'Something'
+LABEL "in quotes ====== 'this is in different quotes'
+LABEL asd=234 xcvb=456
+" = "xyz"
+LABEL "LAB1"="VAL1" "LAB2"="VAL2"
+
+This is a syntax error - in red

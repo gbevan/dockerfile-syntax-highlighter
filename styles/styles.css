@@ -7,28 +7,30 @@
 }
 
 .cm-from {
-  background-color: #48489a;
-  border: 1px yellow solid;
+  background-color: rgba(72, 72, 154, 0.63);
   border-radius: 3px;
   color: white;
+  font-weight: bold;
   padding-left: 3px;
   padding-right: 3px;
+  text-decoration: underline;
 }
 
 .cm-maintainer {
-  background-color: #48489a;
-  border: 1px yellow solid;
+  background-color: rgba(72, 72, 154, 0.63);
   border-radius: 3px;
   color: white;
+  font-weight: bold;
   padding-left: 3px;
   padding-right: 3px;
+  text-decoration: underline;
 }
 
 .cm-expose {
-  background-color: #797500;
-  border: 1px #980000 solid;
+  /*border: 1px #980000 dotted;*/
   border-radius: 3px;
-  color: black;
+  background-color:rgba(167, 65, 65, 0.46);
+  color: yellow;
   font-weight: bold;
   padding-left: 3px;
   padding-right: 3px;
@@ -40,4 +42,6 @@
 
 .cm-debug2 {
   color: #b90000;
+  background-color: yellow;
 }
+
