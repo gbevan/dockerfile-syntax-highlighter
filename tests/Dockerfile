@@ -36,6 +36,8 @@ RUN \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+    # comment
+
 # Mongodb & mean-cli
 RUN \
     echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' > /etc/apt/sources.list.d/mongodb.list && \
@@ -55,6 +57,8 @@ RUN \
     npm cache clean && \
     rm -rf /var/lib/mongodb/* /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+    # comment
+
 # App init
 RUN \
     /usr/bin/mongod --config /etc/mongod.conf --fork --smallfiles && \
@@ -68,13 +72,18 @@ RUN \
     (killall mongod 2>/dev/null || true) && sleep 10 && (killall -9 mongod 2>/dev/null || true) && sleep 5 && \
     rm -rf /var/lib/mongodb/* /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+    # comment
+
 CMD cat /etc/motd
 CMD \
   cat /etc/motd; \
   cat /something
 
+  # comment
+
 CMD ["executable", "param1", "param2"]
 CMD echo "This is a test." | wc -
+  # comment
 
 ADD start-image.sh /
 
@@ -121,5 +130,6 @@ LABEL "in quotes ====== 'this is in different quotes'
 LABEL asd=234 xcvb=456
 " = "xyz"
 LABEL "LAB1"="VAL1" "LAB2"="VAL2"
+    #comment
 
 This is a syntax error - in red
