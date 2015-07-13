@@ -168,7 +168,7 @@ define(function (require, exports, module) {
             var strret = self.testEatString(stream, state);
             console.log('strret:', strret, 'eol:', stream.eol(), 'current:', stream.current(), 'state:', state);
             if (strret) {
-              if (strret2 === 'quote' || (stream.eol() && state.quote === '')) {  // end quote
+              if (strret === 'quote' || (stream.eol() && state.quote === '')) {  // end quote
                 if (state.inDirective) {
                   state.inDirective = false;
                 }
