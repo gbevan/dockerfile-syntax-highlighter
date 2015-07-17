@@ -1,9 +1,13 @@
-/*jslint regexp: true, vars: true*/
+/*jslint nomen: true, regexp: true, vars: true*/
 // vim:ai:ts=2:sw=2:sts=2:et
 
-/*global define,brackets,console */
+/*global define,brackets,console,DockerfileLexer */
 define(function (require, exports, module) {
   'use strict';
+
+  //console.log('module:', module);
+  require('./dockerlex');
+
 
   // For integration with Brackets' LanguageManager
   var LanguageManager = brackets.getModule("language/LanguageManager");
@@ -19,6 +23,9 @@ define(function (require, exports, module) {
     // Initial State Class
     var State = function (state) {
       if (!state) {
+        this.start = true;
+        this.lexer = new DockerfileLexer();  // from dockerlex
+        /*
         this.inDirective = false;
         this.inEnv = false;
         this.inLabel = false;
@@ -33,7 +40,7 @@ define(function (require, exports, module) {
         this.localState = null;
 
         this.currentDirective = '';
-
+        */
       } else {
         var i;
         for (i in state) {
@@ -61,6 +68,113 @@ define(function (require, exports, module) {
       name: 'shell'
     });
 
+    self.tokenize = function (stream, state) {
+      var i;
+
+      console.log('------------------- new tokenize() ---------------------');
+      console.log('stream at start tokenize:', stream);
+      console.log('lexer at start:', Object.create(state.lexer));
+
+      if (state.start) {
+        state.start = false;
+
+        //stream.line = 0;
+        //stream.col = 0;
+        state.lexer.setInput(stream);
+      }
+
+      stream.getPos = function () {
+        return this.pos;
+      };
+
+      stream.more = function () {
+        var rc = this.pos < this.string.length;
+        console.log('stream.more() this:', this);
+        console.log('stream.more() pos:', this.pos, 'string:', this.string, '-> rc:', rc);
+        return rc;
+      };
+
+      stream.updatePos = function (str, delta) {
+        console.log('stream.updatePos([', str, '], ' + delta + ')');
+        for (i = 0; i < str.length; i += 1) {
+          if (str[i] === '\n') {
+            this.col = 0;
+            this.line += delta;
+          } else {
+            this.col += delta;
+          }
+        }
+        console.log('line:', this.line, 'col:', this.col);
+      };
+
+      stream.rollback = function (str) {
+        console.log('stream.rollback(', str, ')');
+        if (typeof str === 'string') {
+          var istr = this.string.substring(this.pos - str.length, this.pos);
+          if (istr === str) {
+            this.pos -= str.length;
+            this.updatePos(str, -1);
+          } else {
+            throw new Error('Expected "' + str + '", got "' + istr + '"!');
+          }
+        } else {
+          this.pos -= str;
+          this.updatePos(str, -1);
+        }
+      };
+
+      console.log('stream b4 nextToken:', stream);
+      state.lexer.input = stream;
+      var token = state.lexer.nextToken();
+      console.log('stream after nextToken:', stream);
+      console.log('token:', token);
+
+        /*
+      //while (!stream.eol()) {
+        console.log('stream before eat:', stream);
+        stream.eatWhile(/./);
+        console.log('stream after eat:', stream);
+        console.log('eol:', stream.eol());
+        var startPos = stream.start;
+        //state.content += stream.current() + '\n';
+        console.log('current:', stream.current());
+
+        state.lexer.setInput(stream.current());
+
+        var token = state.lexer.nextToken();
+        console.log('token #1:', token);
+        console.log('stream #1:', stream);
+
+        //stream.pos = startPos + token.position;
+        stream.backUp(3);
+        //console.log('stream #1 after pos:', stream);
+        //stream.start = 5;
+        //stream.pos = 5;
+
+
+        stream.eatWhile(/./);
+        console.log('stream after eat #2:', stream);
+        console.log('current #2:', stream.current());
+
+        console.log('endPos:', endPos, 'token.position:', token.position);
+        var bk = endPos - (endPos - token.position);
+        console.log('backing up:', bk);
+        stream.backUp(bk);
+        console.log('stream after backUp:', stream);
+        console.log('current:', stream.current());
+        stream.eatWhile(/./);
+        console.log('stream after 2nd eat:', stream);
+        console.log('current:', stream.current());
+        stream.pos = startPos + token.position;
+        console.log('stream after new start:', stream);
+        console.log('current:', stream.current());
+        */
+      //}
+
+      return (token.name ? token.name.toLowerCase() : null);
+    };
+
+    /*
     self.endString = function (state) {
       state.inString = false;
       state.startString = true;
@@ -294,11 +408,13 @@ define(function (require, exports, module) {
       stream.eat(/./);
       return 'error';
     };
+    */
 
     // Start it all
     return {
       startState: function () {
         var state = new State();
+        console.log('startState() called');
 
         return state;
       },
@@ -312,7 +428,7 @@ define(function (require, exports, module) {
   LanguageManager.defineLanguage("dockerfile", {
     name: "Dockerfile",
     mode: "dockerfile_plus",
-    fileNames: ["Dockerfile", "Dockerfile.bak", "Dockerfile.1"],
+    fileNames: ["Dockerfile", "Dockerfile.bak", "Dockerfile.1", "Dockerfile.2"],
     lineComment: ["#"]
   });
 

@@ -1,3 +1,5 @@
+FROM ABC
+
 # Build:
 #  docker build -t gbevan/meanio .
 #
@@ -11,7 +13,7 @@ ENV DEBIAN_FRONTEND noninteractive # comment
 ENV LANG=C
 ENV LC_ALL=C
 ENV ABC=123 DEF=567
-ENV GHI="data spaces" JKL="uck"   # comment
+ENV GHI="data spaces" JKL="uck"   # commentx
 
 # Dependencies
 RUN \

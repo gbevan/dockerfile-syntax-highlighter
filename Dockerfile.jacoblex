@@ -1,0 +1,84 @@
+// node node_modules/.bin/jacob -t Dockerfile.jacoblex -l dockerlex.js
+
+%moduleName DockerfileLexer
+
+%%
+
+digits = [0-9]
+directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|VOLUME|USER|WORKDIR|ONBUILD|LABEL)
+openstring = .+
+escape = \\/[^\]
+
+label = \w+
+equals = =
+
+%%
+
+
+
+<>^\s*\n    { } // empty line
+
+<>#.*  {
+  console.log('comment');
+  return 'COMMENT';
+}
+
+<>"     { this.pushState('QUOTEDSTRING'); }
+<QUOTEDSTRING>"   { this.popState(); return 'QUOTEDSTRING'; }
+<QUOTEDSTRING>(\n|\r|.) {}
+
+<UNQUOTEDSTRING>.*\\ {
+  console.log('UNQUOTEDSTRING #2');
+  return 'STRING';
+}
+<UNQUOTEDSTRING>[^\\]+ {
+  console.log('UNQUOTEDSTRING #1, state:', this.state);
+  this.popState();
+  return 'STRING';
+}
+
+//<UNQUOTEDSTRING>.+ {
+//  console.log('UNQUOTEDSTRING ERROR, jjtext:', this.jjtext, 'jjval:', this.jjval);
+//  this.popState();
+//  return 'ERROR';
+//}
+
+<>{directive}/\s+  {
+  var d = this.jjtext.match(/(\w+)/)[1];
+  this.jjval = d;
+  if (!d.match(/(ENV)/)) {
+    d = 'DOCKDIR';
+  }
+  console.log('DEBUG: d:', d, 'state:', this.state);
+  this.pushState(d);
+  return d;
+}
+<DOCKDIR>\s+ {
+  this.jjval = this.jjtext.trim();
+  this.popState();
+  console.log('pushing UNQUOTEDSTRING');
+  this.pushState('UNQUOTEDSTRING');
+  //return 'STRING';
+  return null;
+}
+<DOCKDIR>. {
+  console.error('DOCKDIR error');
+  return 'ERROR';
+}
+
+<ENV>\s+{openstring}\n {
+  this.jjval = this.jjtext.trim();
+  this.popState();
+  return 'STRING';
+}
+
+
+// Catchalls
+<>\s+   {
+  console.log('caught remaining whitespace');
+} // remaining whitespace
+
+<>. {
+  console.error('caught error');
+  return 'ERROR';
+} // anything else unexpected
