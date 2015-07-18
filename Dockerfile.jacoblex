@@ -225,7 +225,7 @@ string = .+
     this.localMode = this.bashMode;
     this.localState = this.bashMode.startState();
   } else {
-    if (d.match(/FROM|MAINTAINER/i)) {
+    if (d.match(/FROM|MAINTAINER|EXPOSE/i)) {
       this.stringAs = d.toLowerCase();
     }
     if (!d.match(/ENV|LABEL/i)) {
