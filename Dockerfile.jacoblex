@@ -85,6 +85,11 @@ string = .+
   this.popState();
   return 'COMMENT';
 }
+<ENV>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
+}
 <ENVDEF>\w+ {
   this.popState();
   if (this.input.more()) {
@@ -94,6 +99,11 @@ string = .+
     this.popState();
   }
   return 'DEF';
+}
+<ENVDEF>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
 }
 <ENVASSIGN>\s*=\s* {
   this.popState();

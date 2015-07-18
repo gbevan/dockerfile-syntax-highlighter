@@ -12,6 +12,13 @@ ENV LANG=C
 ENV LC_ALL=C
 ENV ABC=123 DEF=567
 ENV GHI="data spaces" JKL="uck"   # commentx
+ENV VAR1=data1 \
+  data \
+  continued
+ENV VAR3 data1 \
+  data2 \
+  continued
+ENV VAR2="data1"
 
 # Dependencies
 RUN \
