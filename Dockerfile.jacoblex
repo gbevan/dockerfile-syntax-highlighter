@@ -15,10 +15,6 @@ string = .+
 
 %%
 
-
-<>$ {console.log('EOL');}
-<>^\s*\n    { } // empty line
-
 <>#.*  {
   return 'COMMENT';
 }
@@ -26,12 +22,25 @@ string = .+
 /********************************************************************
  * Parse quoted strings
  */
-<>["']     { this.pushState('QUOTEDSTRING'); return null}
-<QUOTEDSTRING>["']   {
+<STARTQUOTEDSTRING>["'] {
+  this.quote = this.jjtext;
+  this.popState();
+  this.pushState('QUOTEDSTRING');
+  return null;
+}
+<QUOTEDSTRING>["'] {
+  //console.log('QUOTEDSTRING this.jjtext:', this.jjtext, 'this.quote:', this.quote);
+  if (this.jjtext !== this.quote) {
+    return (this.stringAs || 'STRING');
+  }
+  this.quote = null;
+  this.stringAs = null;
   this.popState();
   return null;
 }
-<QUOTEDSTRING>(\n|\r|.) { return 'STRING'}
+<QUOTEDSTRING>(\n|\r|.|\\.) {
+  return (this.stringAs || 'STRING');
+}
 
 
 /********************************************************************
@@ -40,6 +49,7 @@ string = .+
 
 <UNQUOTEDSTRING>#.* { // comment
   this.popState();
+  this.stringAs = null;
   var s = this.getState();
   if (s.match(/^(ENV)$/)) {
     this.popState();
@@ -47,17 +57,19 @@ string = .+
   return 'COMMENT';
 }
 <UNQUOTEDSTRING>\\ {  // escaped eol, continue string
-  return 'STRING';
+  return (this.stringAs || 'STRING');
 }
 <UNQUOTEDSTRING>[^\\#]+|\\. {
+  var tok = (this.stringAs || 'STRING');
   if (!this.input.more()) {
     this.popState();
+    this.stringAs = null;
     var s = this.getState();
     if (s.match(/^(ENV)$/)) {
       this.popState();
     }
   }
-  return 'STRING';
+  return tok;
 }
 
 /********************************************************************
@@ -70,7 +82,6 @@ string = .+
   return null;
 }
 <ENV>\s*#.* {
-  console.log('ENV comment');
   this.popState();
   return 'COMMENT';
 }
@@ -105,12 +116,12 @@ string = .+
   return null;
 }
 <ENVASSIGN>. {
-  console.error('ENVASSIGN error');
   return 'ERROR';
 }
 <ENVVAL>["'] {
+  this.less(1);
   this.popState();
-  this.pushState('QUOTEDSTRING');
+  this.pushState('STARTQUOTEDSTRING');
   return null;
 }
 <ENVVAL>[^"'] {
@@ -119,6 +130,79 @@ string = .+
   this.pushState('UNQUOTEDSTRING');
   return 'STRING';
 }
+
+/********************************************************************
+ * LABEL directive
+ */
+<LABEL>\s+ {
+  if (this.input.more()) {
+    this.pushState('LABELDEF');
+  }
+  return null;
+}
+<LABEL>\s*#.* {
+  this.popState();
+  return 'COMMENT';
+}
+<LABEL>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
+}
+<LABELDEF>[\w\.\-]+ {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('LABELASSIGN');
+  } else {
+    // pop out of LABEL
+    this.popState();
+  }
+  return 'DEF';
+}
+<LABELDEF>['"] {
+  this.less(1);
+  this.stringAs = 'def';
+  this.popState();
+  this.pushState('LABELASSIGN');
+  this.pushState('STARTQUOTEDSTRING');
+  return null;
+}
+<LABELASSIGN>\s*=\s* {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('LABELVAL');
+  } else {
+    // pop out of LABEL
+    this.popState();
+  }
+  return null;
+}
+<LABELASSIGN>\s+ {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('UNQUOTEDSTRING');
+  } else {
+    // pop out of LABEL
+    this.popState();
+  }
+  return null;
+}
+<LABELASSIGN>. {
+  return 'ERROR';
+}
+<LABELVAL>["'] {
+  this.less(1);
+  this.popState();
+  this.pushState('STARTQUOTEDSTRING');
+  return null;
+}
+<LABELVAL>[^"'] {
+  this.less(1);
+  this.popState();
+  this.pushState('UNQUOTEDSTRING');
+  return 'STRING';
+}
+
 
 /********************************************************************
  * Match all directives directive
@@ -131,10 +215,13 @@ string = .+
     this.localMode = this.bashMode;
     this.localState = this.bashMode.startState();
   } else {
-    if (!d.match(/ENV/i)) {
+    if (d.match(/FROM|MAINTAINER/i)) {
+      this.stringAs = d.toLowerCase();
+    }
+    if (!d.match(/ENV|LABEL/i)) {
       d = 'DOCKDIR';
     }
-    this.pushState(d);
+    this.pushState(d.toUpperCase());
   }
   return 'DOCKDIR';
 }
@@ -145,7 +232,6 @@ string = .+
   return null;
 }
 <DOCKDIR>. {
-  console.error('DOCKDIR error');
   return 'ERROR';
 }
 
@@ -158,7 +244,6 @@ string = .+
 
 // Catchalls
 <>\s+   {
-  console.log('caught remaining whitespace');
 } // remaining whitespace
 
 <>. {
