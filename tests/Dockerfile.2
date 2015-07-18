@@ -2,3 +2,21 @@ FROM abcdddfg\
 a\\\\\\\
 b \# not-comment # comment
 #comment
+MAINTAINER Graham Bevan "email"
+
+ENV DEBIAN_FRONTEND noninteractive # commentZZ
+ENV LANG=C
+ENV LC_ALL=C
+ENV ABC=123 DEF=567
+ENV GHI="data spaces" JKL="uck"   # commentx
+
+
+"quoted
+multiline
+until end quote "
+
+
+ENV VAR1 val1\
+    val2 \
+
+"quoted"

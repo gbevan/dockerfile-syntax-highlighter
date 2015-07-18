@@ -24,9 +24,16 @@ string = .+
   return 'COMMENT';
 }
 
-<>"     { this.pushState('QUOTEDSTRING'); }
-<QUOTEDSTRING>"   { this.popState(); return 'QUOTEDSTRING'; }
-<QUOTEDSTRING>(\n|\r|.) {}
+/********************************************************************
+ * Parse quoted strings
+ */
+<>"     { this.pushState('QUOTEDSTRING'); return null}
+<QUOTEDSTRING>"   {
+  this.popState();
+  console.log('QUOTEDSTRING popped state:', this.getState());
+  return null;
+}
+<QUOTEDSTRING>. { return 'STRING'}
 
 
 /********************************************************************
@@ -35,6 +42,11 @@ string = .+
 
 <UNQUOTEDSTRING>#.* { // comment
   this.popState();
+  console.log('UNQUOTEDSTRING COMMENT popped state:', this.getState());
+  var s = this.getState();
+  if (s.match(/^(ENV)$/)) {
+    this.popState();
+  }
   return 'COMMENT';
 }
 <UNQUOTEDSTRING>\\ {  // escaped eol, continue string
@@ -43,11 +55,81 @@ string = .+
 <UNQUOTEDSTRING>[^\\#]+|\\. {
   if (!this.input.more()) {
     this.popState();
+    console.log('UNQUOTEDSTRING popped state:', this.getState());
+    var s = this.getState();
+    if (s.match(/^(ENV)$/)) {
+      this.popState();
+    }
   }
   return 'STRING';
 }
 
+/********************************************************************
+ * ENV directive
+ */
+<ENV>\s+ {
+  console.log('ENV eat \\s+');
+  //this.popState();
+  if (this.input.more()) {
+    this.pushState('ENVDEF');
+  }
+  return null;
+}
+<ENV>\s*#.* {
+  console.log('ENV comment');
+  this.popState();
+  return 'COMMENT';
+}
+<ENVDEF>\w+ {
+  console.log('ENV eat \\w+ var def');
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('ENVASSIGN');
+  } else {
+    // pop out of ENV
+    this.popState();
+  }
+  return 'DEF';
+}
+<ENVASSIGN>\s*=\s* {
+  console.log('Env assign =');
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('ENVVAL');
+  } else {
+    // pop out of ENV
+    this.popState();
+  }
+  return null;
+}
+<ENVASSIGN>\s+ {
+  console.log('Env assign != start UNQUOTEDSTRING');
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('UNQUOTEDSTRING');
+  } else {
+    // pop out of ENV
+    this.popState();
+  }
+  return null;
+}
+<ENVVAL>" {
+  console.log('ENV start QUOTEDSTRING');
+  this.popState();
+  this.pushState('QUOTEDSTRING');
+  return null;
+}
+<ENVVAL>[^"] {
+  console.log('Env val start UNQUOTEDSTRING');
+  this.less(1);
+  this.popState();
+  this.pushState('UNQUOTEDSTRING');
+  return 'STRING';
+}
 
+/********************************************************************
+ * Match all directives directive
+ */
 <>{directive}  {
   var d = this.jjtext.match(/(\w+)/)[1];
   this.jjval = d;
@@ -56,14 +138,13 @@ string = .+
   }
   console.log('DEBUG: d:', d, 'state:', this.state);
   this.pushState(d);
-  return d;
+  return 'DOCKDIR';
 }
 <DOCKDIR>\s+ {
   this.jjval = this.jjtext.trim();
   this.popState();
   console.log('pushing UNQUOTEDSTRING');
   this.pushState('UNQUOTEDSTRING');
-  //return 'STRING';
   return null;
 }
 <DOCKDIR>. {

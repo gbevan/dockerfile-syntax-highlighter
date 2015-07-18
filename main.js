@@ -120,7 +120,8 @@ define(function (require, exports, module) {
         state.lastChar = '\n';
       }
 
-      console.log('lexer at (sol?):', Object.create(state));
+      console.log('lexer:', Object.create(state));
+      console.log('lexer states:', state.state);
       console.log('stream b4 nextToken:', stream);
       state.input = stream;
       var token = state.nextToken();
@@ -428,7 +429,11 @@ define(function (require, exports, module) {
       },
       */
 
-      token: self.tokenize
+      token: self.tokenize,
+      blankLine: function (state) {
+        console.log('blankLine');
+        return self.tokenize(new CodeMirror.StringStream('\n'), state);
+      }
 
     };
 
