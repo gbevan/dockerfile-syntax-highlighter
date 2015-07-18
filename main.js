@@ -105,6 +105,7 @@ define(function (require, exports, module) {
           state.quote = '';
           return 'quote';
         }
+
       } else {
         console.log('unquoted string:', stream.current());
         if (stream.eatWhile(/\S+/)) {
@@ -303,7 +304,16 @@ define(function (require, exports, module) {
         return state;
       },
 
-      token: self.tokenize
+      token: function (stream, state) {
+        console.log('----------- Tokenize ------------');
+        console.log('BEFORE> stream:', stream);
+        console.log('BEFORE> state:', state);
+        var tok = self.tokenize(stream, state);
+        console.log('AFTER> stream:', stream);
+        console.log('AFTER> state:', state);
+        console.log('AFTER> tok:', tok);
+        return tok;
+      }
 
     };
 
