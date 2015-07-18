@@ -76,9 +76,12 @@ define(function (require, exports, module) {
 
       if (state.start) {
         state.start = false;
+        state.localMode = null;
+        state.localState = null;
 
         state.setInput(stream);
       }
+      state.bashMode = bashMode;
 
       stream.getPos = function () {
         return this.pos;
@@ -118,6 +121,16 @@ define(function (require, exports, module) {
       if (stream.sol()) {
         console.log('sol');
         state.lastChar = '\n';
+      }
+
+      if (state.localMode) {
+        var res = state.localMode.token(stream, state.localState);
+        if (stream.eol()) {
+          if (stream.current() !== '\\') {
+            state.localState = state.localMode = null;
+          }
+        }
+        return res;
       }
 
       console.log('lexer:', Object.create(state));

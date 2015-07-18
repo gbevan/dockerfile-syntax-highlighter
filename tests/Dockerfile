@@ -112,13 +112,13 @@ LABEL "abcdfefsdf" = "this is a string" # comment
 LABEL 'this is another' = skdfsldkfj
 LABEL "this ''''' is a string" = yup
 LABEL "this \"
-is error"
+is error""
 
 LABEL "this \
 is multiline"
 
 LABEL "this is error
-on multiline"
+on multiline""
 
 LABELthis is an error and therefore in red
 LABEL "com.example.vendor"="ACME Incorporated"
@@ -130,7 +130,7 @@ LABEL "this is a multiline \
 thang" = 'Something'
 LABEL "in quotes ====== 'this is in different quotes'
 LABEL asd=234 xcvb=456
-" = "xyz"
+" = "xyz""
 LABEL "LAB1"="VAL1" "LAB2"="VAL2"
     #comment
 
