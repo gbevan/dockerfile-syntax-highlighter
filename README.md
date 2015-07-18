@@ -5,6 +5,8 @@ Brackets syntax highlighter for Dockerfiles.
 
 Includes highlighting of nested shell scripts on the RUN and CMD directives.
 
+Uses [Jacob](https://github.com/Canna71/Jacob) Lexical Tokenizer under the hood.
+
 Screenshots
 -----------
 

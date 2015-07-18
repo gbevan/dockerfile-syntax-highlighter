@@ -1,7 +1,7 @@
 {
   "name": "dockerfile-syntax-highlighter",
   "title": "Enhanced Dockerfile Syntax Highlighter",
-  "description": "Enhanced Dockerfile Syntax Highlighter with nested Shell highlighting.",
+  "description": "Enhanced Dockerfile Syntax Highlighter with nested Shell highlighting. Rewritten to use the Jacob Lexer under the hood for a more robust (and easier to maintain) Lexical Tokenizer. Please raise any issues via the project's GitHub home page.",
   "homepage": "https://github.com/gbevan/dockerfile-syntax-highlighter",
   "keywords": [
     "docker",
