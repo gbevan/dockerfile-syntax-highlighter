@@ -11,7 +11,14 @@ ENV DEBIAN_FRONTEND noninteractive # comment
 ENV LANG=C
 ENV LC_ALL=C
 ENV ABC=123 DEF=567
-ENV GHI="data spaces" JKL="uck"   # comment
+ENV GHI="data spaces" JKL="uck"   # commentx
+ENV VAR1=data1 \
+  data \
+  continued
+ENV VAR3 data1 \
+  data2 \
+  continued
+ENV VAR2="data1"
 
 # Dependencies
 RUN \
@@ -115,8 +122,9 @@ is error"
 LABEL "this \
 is multiline"
 
-LABEL "this is error
-on multiline"
+LABEL "this is
+errors
+on multiline""
 
 LABELthis is an error and therefore in red
 LABEL "com.example.vendor"="ACME Incorporated"
@@ -128,7 +136,7 @@ LABEL "this is a multiline \
 thang" = 'Something'
 LABEL "in quotes ====== 'this is in different quotes'
 LABEL asd=234 xcvb=456
-" = "xyz"
+" = "xyz -> error""
 LABEL "LAB1"="VAL1" "LAB2"="VAL2"
     #comment
 

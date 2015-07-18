@@ -1,0 +1,262 @@
+// node node_modules/.bin/jacob -t Dockerfile.jacoblex -l dockerlex.js
+
+%moduleName DockerfileLexer
+
+%%
+
+digits = [0-9]
+directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|VOLUME|USER|WORKDIR|ONBUILD|LABEL)
+openstring = .+
+
+label = \w+
+equals = =
+
+string = .+
+
+%%
+
+<>#.*  {
+  return 'COMMENT';
+}
+
+/********************************************************************
+ * Parse quoted strings
+ */
+<STARTQUOTEDSTRING>["'] {
+  this.quote = this.jjtext;
+  this.popState();
+  this.pushState('QUOTEDSTRING');
+  return null;
+}
+<QUOTEDSTRING>["'] {
+  //console.log('QUOTEDSTRING this.jjtext:', this.jjtext, 'this.quote:', this.quote);
+  if (this.jjtext !== this.quote) {
+    return (this.stringAs || 'STRING');
+  }
+  this.quote = null;
+  this.stringAs = null;
+  this.popState();
+  return null;
+}
+<QUOTEDSTRING>(\n|\r|.|\\.) {
+  return (this.stringAs || 'STRING');
+}
+
+
+/********************************************************************
+ * Parse unquoted strings, supporting escaped new-lines and comments
+ */
+
+<UNQUOTEDSTRING>#.* { // comment
+  this.popState();
+  this.stringAs = null;
+  var s = this.getState();
+  if (s.match(/^(ENV)$/)) {
+    this.popState();
+  }
+  return 'COMMENT';
+}
+<UNQUOTEDSTRING>\\ {  // escaped eol, continue string
+  return (this.stringAs || 'STRING');
+}
+<UNQUOTEDSTRING>[^\\#]+|\\. {
+  var tok = (this.stringAs || 'STRING');
+  if (!this.input.more()) {
+    this.popState();
+    this.stringAs = null;
+    var s = this.getState();
+    if (s.match(/^(ENV)$/)) {
+      this.popState();
+    }
+  }
+  return tok;
+}
+
+/********************************************************************
+ * ENV directive
+ */
+<ENV>\s+ {
+  if (this.input.more()) {
+    this.pushState('ENVDEF');
+  }
+  return null;
+}
+<ENV>\s*#.* {
+  this.popState();
+  return 'COMMENT';
+}
+<ENV>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
+}
+<ENVDEF>\w+ {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('ENVASSIGN');
+  } else {
+    // pop out of ENV
+    this.popState();
+  }
+  return 'DEF';
+}
+<ENVDEF>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
+}
+<ENVASSIGN>\s*=\s* {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('ENVVAL');
+  } else {
+    // pop out of ENV
+    this.popState();
+  }
+  return null;
+}
+<ENVASSIGN>\s+ {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('UNQUOTEDSTRING');
+  } else {
+    // pop out of ENV
+    this.popState();
+  }
+  return null;
+}
+<ENVASSIGN>. {
+  return 'ERROR';
+}
+<ENVVAL>["'] {
+  this.less(1);
+  this.popState();
+  this.pushState('STARTQUOTEDSTRING');
+  return null;
+}
+<ENVVAL>[^"'] {
+  this.less(1);
+  this.popState();
+  this.pushState('UNQUOTEDSTRING');
+  return 'STRING';
+}
+
+/********************************************************************
+ * LABEL directive
+ */
+<LABEL>\s+ {
+  if (this.input.more()) {
+    this.pushState('LABELDEF');
+  }
+  return null;
+}
+<LABEL>\s*#.* {
+  this.popState();
+  return 'COMMENT';
+}
+<LABEL>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
+}
+<LABELDEF>[\w\.\-]+ {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('LABELASSIGN');
+  } else {
+    // pop out of LABEL
+    this.popState();
+  }
+  return 'DEF';
+}
+<LABELDEF>['"] {
+  this.less(1);
+  this.stringAs = 'def';
+  this.popState();
+  this.pushState('LABELASSIGN');
+  this.pushState('STARTQUOTEDSTRING');
+  return null;
+}
+<LABELASSIGN>\s*=\s* {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('LABELVAL');
+  } else {
+    // pop out of LABEL
+    this.popState();
+  }
+  return null;
+}
+<LABELASSIGN>\s+ {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('UNQUOTEDSTRING');
+  } else {
+    // pop out of LABEL
+    this.popState();
+  }
+  return null;
+}
+<LABELASSIGN>. {
+  return 'ERROR';
+}
+<LABELVAL>["'] {
+  this.less(1);
+  this.popState();
+  this.pushState('STARTQUOTEDSTRING');
+  return null;
+}
+<LABELVAL>[^"'] {
+  this.less(1);
+  this.popState();
+  this.pushState('UNQUOTEDSTRING');
+  return 'STRING';
+}
+
+
+/********************************************************************
+ * Match all directives directive
+ */
+<>{directive}  {
+  var d = this.jjtext.match(/(\w+)/)[1];
+  this.jjval = d;
+
+  if (d.match(/RUN|CMD/i)) {
+    this.localMode = this.bashMode;
+    this.localState = this.bashMode.startState();
+  } else {
+    if (d.match(/FROM|MAINTAINER/i)) {
+      this.stringAs = d.toLowerCase();
+    }
+    if (!d.match(/ENV|LABEL/i)) {
+      d = 'DOCKDIR';
+    }
+    this.pushState(d.toUpperCase());
+  }
+  return 'DOCKDIR';
+}
+<DOCKDIR>\s+ {
+  this.jjval = this.jjtext.trim();
+  this.popState();
+  this.pushState('UNQUOTEDSTRING');
+  return null;
+}
+<DOCKDIR>. {
+  return 'ERROR';
+}
+
+<ENV>\s+{openstring}\n {
+  this.jjval = this.jjtext.trim();
+  this.popState();
+  return 'STRING';
+}
+
+
+// Catchalls
+<>\s+   {
+} // remaining whitespace
+
+<>. {
+  //console.error('caught error');
+  return 'ERROR';
+} // anything else unexpected
