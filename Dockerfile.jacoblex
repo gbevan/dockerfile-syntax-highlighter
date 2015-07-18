@@ -7,15 +7,16 @@
 digits = [0-9]
 directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|VOLUME|USER|WORKDIR|ONBUILD|LABEL)
 openstring = .+
-escape = \\/[^\]
 
 label = \w+
 equals = =
 
+string = .+
+
 %%
 
 
-
+<>$ {console.log('EOL');}
 <>^\s*\n    { } // empty line
 
 <>#.*  {
@@ -27,23 +28,27 @@ equals = =
 <QUOTEDSTRING>"   { this.popState(); return 'QUOTEDSTRING'; }
 <QUOTEDSTRING>(\n|\r|.) {}
 
-<UNQUOTEDSTRING>.*\\ {
-  console.log('UNQUOTEDSTRING #2');
-  return 'STRING';
-}
-<UNQUOTEDSTRING>[^\\]+ {
-  console.log('UNQUOTEDSTRING #1, state:', this.state);
+
+/********************************************************************
+ * Parse unquoted strings, supporting escaped new-lines and comments
+ */
+
+<UNQUOTEDSTRING>#.* { // comment
   this.popState();
+  return 'COMMENT';
+}
+<UNQUOTEDSTRING>\\ {  // escaped eol, continue string
+  return 'STRING';
+}
+<UNQUOTEDSTRING>[^\\#]+|\\. {
+  if (!this.input.more()) {
+    this.popState();
+  }
   return 'STRING';
 }
 
-//<UNQUOTEDSTRING>.+ {
-//  console.log('UNQUOTEDSTRING ERROR, jjtext:', this.jjtext, 'jjval:', this.jjval);
-//  this.popState();
-//  return 'ERROR';
-//}
 
-<>{directive}/\s+  {
+<>{directive}  {
   var d = this.jjtext.match(/(\w+)/)[1];
   this.jjval = d;
   if (!d.match(/(ENV)/)) {

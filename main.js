@@ -1,7 +1,7 @@
 /*jslint nomen: true, regexp: true, vars: true*/
 // vim:ai:ts=2:sw=2:sts=2:et
 
-/*global define,brackets,console,DockerfileLexer */
+/*global define,brackets,console,DockerfileLexer,jQuery */
 define(function (require, exports, module) {
   'use strict';
 
@@ -24,7 +24,7 @@ define(function (require, exports, module) {
     var State = function (state) {
       if (!state) {
         this.start = true;
-        this.lexer = new DockerfileLexer();  // from dockerlex
+        //this.lexer = new DockerfileLexer();  // from dockerlex
         /*
         this.inDirective = false;
         this.inEnv = false;
@@ -67,20 +67,17 @@ define(function (require, exports, module) {
     var bashMode = CodeMirror.getMode(config, {
       name: 'shell'
     });
+    console.log('bashMode:', bashMode);
 
     self.tokenize = function (stream, state) {
       var i;
 
       console.log('------------------- new tokenize() ---------------------');
-      console.log('stream at start tokenize:', stream);
-      console.log('lexer at start:', Object.create(state.lexer));
 
       if (state.start) {
         state.start = false;
 
-        //stream.line = 0;
-        //stream.col = 0;
-        state.lexer.setInput(stream);
+        state.setInput(stream);
       }
 
       stream.getPos = function () {
@@ -89,13 +86,10 @@ define(function (require, exports, module) {
 
       stream.more = function () {
         var rc = this.pos < this.string.length;
-        console.log('stream.more() this:', this);
-        console.log('stream.more() pos:', this.pos, 'string:', this.string, '-> rc:', rc);
         return rc;
       };
 
       stream.updatePos = function (str, delta) {
-        console.log('stream.updatePos([', str, '], ' + delta + ')');
         for (i = 0; i < str.length; i += 1) {
           if (str[i] === '\n') {
             this.col = 0;
@@ -104,11 +98,9 @@ define(function (require, exports, module) {
             this.col += delta;
           }
         }
-        console.log('line:', this.line, 'col:', this.col);
       };
 
       stream.rollback = function (str) {
-        console.log('stream.rollback(', str, ')');
         if (typeof str === 'string') {
           var istr = this.string.substring(this.pos - str.length, this.pos);
           if (istr === str) {
@@ -123,9 +115,15 @@ define(function (require, exports, module) {
         }
       };
 
+      if (stream.sol()) {
+        console.log('sol');
+        state.lastChar = '\n';
+      }
+
+      console.log('lexer at (sol?):', Object.create(state));
       console.log('stream b4 nextToken:', stream);
-      state.lexer.input = stream;
-      var token = state.lexer.nextToken();
+      state.input = stream;
+      var token = state.nextToken();
       console.log('stream after nextToken:', stream);
       console.log('token:', token);
 
@@ -413,11 +411,22 @@ define(function (require, exports, module) {
     // Start it all
     return {
       startState: function () {
-        var state = new State();
-        console.log('startState() called');
-
+        var state = new DockerfileLexer();
         return state;
       },
+
+      /*
+      copyState: function (state) {
+        console.log('in copyState() state:', state);
+        var newState = jQuery.extend(new State(), state);
+        //newState.lexer = jQuery.extend(new DockerfileLexer(), state.lexer);
+        console.log('leaving copyState() newState:', newState);
+        //if (state.lexer === newState.lexer) {
+        //  console.error('error: lexer objects are the same');
+        //}
+        return newState;
+      },
+      */
 
       token: self.tokenize
 
