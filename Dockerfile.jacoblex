@@ -4,20 +4,18 @@
 
 %%
 
-digits = [0-9]
 directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|VOLUME|USER|WORKDIR|ONBUILD|LABEL)
-openstring = .+
-
-label = \w+
-equals = =
-
-string = .+
 
 %%
 
+
+/********************************************************************
+ * Eat Comments in default state
+ */
 <>#.*  {
   return 'COMMENT';
 }
+
 
 /********************************************************************
  * Parse quoted strings
@@ -46,7 +44,6 @@ string = .+
 /********************************************************************
  * Parse unquoted strings, supporting escaped new-lines and comments
  */
-
 <UNQUOTEDSTRING>#.* { // comment
   this.popState();
   this.stringAs = null;
@@ -71,6 +68,7 @@ string = .+
   }
   return tok;
 }
+
 
 /********************************************************************
  * ENV directive
@@ -140,6 +138,7 @@ string = .+
   this.pushState('UNQUOTEDSTRING');
   return 'STRING';
 }
+
 
 /********************************************************************
  * LABEL directive
@@ -215,7 +214,7 @@ string = .+
 
 
 /********************************************************************
- * Match all directives directive
+ * Match all directives and enter respective states
  */
 <>{directive}  {
   var d = this.jjtext.match(/(\w+)/)[1];
@@ -244,13 +243,6 @@ string = .+
 <DOCKDIR>. {
   return 'ERROR';
 }
-
-<ENV>\s+{openstring}\n {
-  this.jjval = this.jjtext.trim();
-  this.popState();
-  return 'STRING';
-}
-
 
 // Catchalls
 <>\s+   {
