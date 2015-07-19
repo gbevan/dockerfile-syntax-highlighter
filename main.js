@@ -1,11 +1,10 @@
 /*jslint nomen: true, regexp: true, vars: true*/
 // vim:ai:ts=2:sw=2:sts=2:et
 
-/*global define,brackets,console,DockerfileLexer,jQuery */
+/*global define,brackets,console,DockerfileLexer */
 define(function (require, exports, module) {
   'use strict';
 
-  //console.log('module:', module);
   require('./dockerlex');
 
 
@@ -107,6 +106,7 @@ define(function (require, exports, module) {
 
     // Start it all
     return {
+
       startState: function () {
         var state = new DockerfileLexer();
         state.start = true;
@@ -117,11 +117,11 @@ define(function (require, exports, module) {
         var newState = CodeMirror.copyState((state.localMode || CodeMirror.getMode()), state);
         newState.stringAs = state.stringAs;
         newState.quote = state.quote;
-        //console.log('in copyState() newState:', newState);
         return newState;
       },
 
       token: self.tokenize,
+
       blankLine: function (state) {
         return self.tokenize(new CodeMirror.StringStream('\n'), state);
       }
@@ -129,6 +129,7 @@ define(function (require, exports, module) {
     };
 
   });
+
   // Register with Brackets
   LanguageManager.defineLanguage("dockerfile", {
     name: "Dockerfile",

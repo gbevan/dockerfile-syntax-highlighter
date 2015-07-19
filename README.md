@@ -23,3 +23,23 @@ Highlighting EXPOSEd ports:
 ![RUN Shell Screenshot](screenshots/expose_prominence.jpg)
 
 enjoy!
+
+Developing
+----------
+
+If you want to further develop this extension, feel free to fork it
+on GitHub.
+
+You will need the jacob Lexical Tokenizer installed:
+
+    $ npm install jacob
+
+To generate the lexer, run:
+
+    $ node node_modules/.bin/jacob -t Dockerfile.jacoblex -l dockerlex.js
+
+or just run:
+
+    $ ./build.sh
+
+which generates the lexer and zip's up the extension for release.
