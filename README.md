@@ -43,3 +43,5 @@ or just run:
     $ ./build.sh
 
 which generates the lexer and zip's up the extension for release.
+
+Also, there is a blog on how this extension was written at [reapingzombies4funandprofit](http://www.reapingzombies4funandprofit.com/blog/archives/129).
