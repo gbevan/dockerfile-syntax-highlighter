@@ -113,13 +113,15 @@ ENTRYPOINT ["/bin/bash", "/start-image.sh"]
 
 EXPOSE 3000 3443 #comment
 
+EXPOSE 3JHGHJ000 3443 JHGJH987987dkjfhksd*^* #comment
+
 LABEL "abcdfefsdf" = "this is a string" # comment
 LABEL 'this is another' = skdfsldkfj
 LABEL "this ''''' is a string" = yup
 LABEL "this \"
 is error"
 
-LABEL "this \
+LABEL "this
 is multiline"
 
 LABEL "this is

@@ -27,7 +27,7 @@
 }
 
 .cm-expose {
-  /*border: 1px #980000 dotted;*/
+  border: 1px #600000 solid;
   border-radius: 3px;
   background-color:rgba(167, 65, 65, 0.46);
   color: yellow;
