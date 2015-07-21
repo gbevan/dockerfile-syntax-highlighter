@@ -124,7 +124,7 @@ is error"
 LABEL "this
 is multiline"
 
-LABEL "this is
+LABEL \"this was
 errors
 on multiline""
 
