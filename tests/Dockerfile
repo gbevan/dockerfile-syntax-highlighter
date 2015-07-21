@@ -111,7 +111,7 @@ VOLUME /var/log /var/db
 #CMD ["/usr/sbin/sshd", "-D", "-e"]
 ENTRYPOINT ["/bin/bash", "/start-image.sh"]
 
-EXPOSE 3000 3443
+EXPOSE 3000 3443 #comment
 
 LABEL "abcdfefsdf" = "this is a string" # comment
 LABEL 'this is another' = skdfsldkfj
