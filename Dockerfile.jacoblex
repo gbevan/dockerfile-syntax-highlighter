@@ -176,6 +176,11 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   this.pushState('STARTQUOTEDSTRING');
   return null;
 }
+<LABELDEF>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
+}
 <LABELASSIGN>\s*=\s* {
   this.popState();
   if (this.input.more()) {
@@ -214,6 +219,30 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
 
 
 /********************************************************************
+ * EXPOSE directive
+ */
+<EXPOSE>\s+ {
+  if (this.input.more()) {
+    this.pushState('EXPOSEDEF');
+  }
+  return null;
+}
+<EXPOSE>\s*#.* {
+  this.popState();
+  return 'COMMENT';
+}
+<EXPOSE>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
+}
+<EXPOSEDEF>\w+ {
+  this.popState();
+  return 'EXPOSE';
+}
+
+
+/********************************************************************
  * Match all directives and enter respective states
  */
 <>{directive}  {
@@ -227,7 +256,7 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
     if (d.match(/FROM|MAINTAINER|EXPOSE/i)) {
       this.stringAs = d.toLowerCase();
     }
-    if (!d.match(/ENV|LABEL/i)) {
+    if (!d.match(/ENV|LABEL|EXPOSE/i)) {
       d = 'DOCKDIR';
     }
     this.pushState(d.toUpperCase());
