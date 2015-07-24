@@ -1,6 +1,8 @@
 FROM ubuntu:latest #this is a comment
 MAINTAINER Your name "you@example.com" # comment
 
+# TODO: unquoted strings should use \_ for spaces
+# https://docs.docker.com/reference/builder/#env
 ENV VAR1=1234 VAR2=234 VAR3="a string" VAR4="please parse me too"
 
 ENV VAR="this is a string" dfgdfgdfg--unparsed errors
@@ -21,3 +23,10 @@ ENV VAR AAAA \
 LABEL 'aaa\
 sdf" = "sdfsdf"' = sdfsdf
 
+LABEL bbb = "sdfsdf
+dfgdfg
+sdfsdf"  # TODO: quoted should be in error, as missing end \
+
+LABEL bbb = "sdfsdf \
+dfgdfgdfg
+sdfsdf"  # quoted should be correct

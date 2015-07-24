@@ -36,6 +36,9 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   this.popState();
   return null;
 }
+
+// TODO: \\ & !more ?
+
 <QUOTEDSTRING>(\n|\r|.|\\.) {
   return (this.stringAs || 'STRING');
 }
