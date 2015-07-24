@@ -23,10 +23,11 @@ ENV VAR AAAA \
 LABEL 'aaa\
 sdf" = "sdfsdf"' = sdfsdf
 
-LABEL bbb = "sdfsdf
+LABEL bbb = "sdfsdf \
 dfgdfg
-sdfsdf"  # TODO: quoted should be in error, as missing end \
+\
+sdfsdf"  # quoted should be in error, as missing end \
 
 LABEL bbb = "sdfsdf \
 dfgdfgdfg
-sdfsdf"  # quoted should be correct
+sdfsdf"  # line endings must be escaped
