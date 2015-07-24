@@ -5,7 +5,8 @@ MAINTAINER Your name "you@example.com" # comment
 # https://docs.docker.com/reference/builder/#env
 ENV VAR1=1234 VAR2=234 VAR3="a string" VAR4="please parse me too"
 
-ENV VAR="this is a string" dfgdfgdfg--unparsed errors
+ENV VAR="this is \
+a string" dfgdfgdfg--unparsed errors
 # comment
 
 ENV V1=1 V2=222
