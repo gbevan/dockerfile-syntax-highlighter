@@ -39,7 +39,11 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
 
 // TODO: \\ & !more ?
 
-<QUOTEDSTRING>(\n|\r|.|\\.) {
+<QUOTEDSTRING>(\n|\r|\\.|.) {
+  if (!this.input.more() && this.jjtext != '\\') {
+    this.popState();
+    //return 'ERROR';
+  }
   return (this.stringAs || 'STRING');
 }
 

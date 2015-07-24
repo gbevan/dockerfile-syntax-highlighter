@@ -13,7 +13,7 @@ ENV GHI="data spaces" JKL="uck"   # commentx
 
 "quoted
 multiline
-until end quote "
+until end quote " # out of context, so error
 
 
 ENV VAR1 val1\
@@ -46,6 +46,6 @@ RUN cat /etc/passwdx
 
 LABEL "aaa" = "bbb"
 LABEL "aaa\
-bbb" = 'ccc
+bbb" = 'ccc\
 ddd'
 LABEL
