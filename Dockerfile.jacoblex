@@ -27,13 +27,19 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   return null;
 }
 <QUOTEDSTRING>["'] {
-  //console.log('QUOTEDSTRING this.jjtext:', this.jjtext, 'this.quote:', this.quote);
   if (this.jjtext !== this.quote) {
     return (this.stringAs || 'STRING');
   }
   this.quote = null;
   this.stringAs = null;
   this.popState();
+
+  var s = this.getState();
+  if (!this.input.more()) {
+    if (s.match(/^(ENV|LABEL)$/)) {
+      this.popState();
+    }
+  }
   return null;
 }
 
@@ -74,6 +80,44 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   return tok;
 }
 
+/********************************************************************
+ * Parse unquoted strings, up to whitespace, supporting escaped
+ * new-lines and comments
+ */
+<UNQUOTEDSTRING2SPACE>#.* { // comment
+  this.popState();
+  this.stringAs = null;
+  var s = this.getState();
+  if (s.match(/^(ENV)$/)) {
+    this.popState();
+  }
+  return 'COMMENT';
+}
+<UNQUOTEDSTRING2SPACE>\\ {  // escaped eol, continue string
+  return (this.stringAs || 'STRING');
+}
+<UNQUOTEDSTRING2SPACE>[^\\#]|\\. {
+  var tok = (this.stringAs || 'STRING');
+  if (!this.input.more()) {
+    this.popState();
+    this.stringAs = null;
+    var s = this.getState();
+    if (s.match(/^(ENV)$/)) {
+      this.popState();
+    }
+  }
+  if (this.jjtext.match(/^[ \t]$/)) {
+    this.less(1);
+    this.popState();
+    this.stringAs = null;
+    var s = this.getState();
+    //if (s.match(/^(ENV)$/)) {
+    //  this.popState();
+    //}
+  }
+  return tok;
+}
+
 
 /********************************************************************
  * ENV directive
@@ -81,6 +125,8 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
 <ENV>\s+ {
   if (this.input.more()) {
     this.pushState('ENVDEF');
+  } else {
+    this.popState()
   }
   return null;
 }
@@ -88,10 +134,21 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   this.popState();
   return 'COMMENT';
 }
-<ENV>. {
-  this.less(1);
+<ENV>\\. {
   this.popState();
   return 'ERROR';
+}
+<ENV>\\ {
+  return null;
+}
+<ENV>. {
+  this.less(1);
+  if (!this.input.sol()) {
+    this.popState();
+    return 'ERROR';
+  }
+  this.pushState('ENVDEF');
+  return null;
 }
 <ENVDEF>\w+ {
   this.popState();
@@ -140,7 +197,7 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
 <ENVVAL>[^"'] {
   this.less(1);
   this.popState();
-  this.pushState('UNQUOTEDSTRING');
+  this.pushState('UNQUOTEDSTRING2SPACE');
   return 'STRING';
 }
 
@@ -151,6 +208,8 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
 <LABEL>\s+ {
   if (this.input.more()) {
     this.pushState('LABELDEF');
+  } else {
+    this.popState()
   }
   return null;
 }
@@ -158,10 +217,21 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   this.popState();
   return 'COMMENT';
 }
-<LABEL>. {
-  this.less(1);
+<LABEL>\\. {
   this.popState();
   return 'ERROR';
+}
+<LABEL>\\ {
+  return null;
+}
+<LABEL>. {
+  this.less(1);
+  if (!this.input.sol()) {
+    this.popState();
+    return 'ERROR';
+  }
+  this.pushState('LABELDEF');
+  return null;
 }
 <LABELDEF>[\w\.\-]+ {
   this.popState();
@@ -218,7 +288,7 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
 <LABELVAL>[^"'] {
   this.less(1);
   this.popState();
-  this.pushState('UNQUOTEDSTRING');
+  this.pushState('UNQUOTEDSTRING2SPACE');
   return 'STRING';
 }
 
@@ -283,6 +353,5 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
 } // remaining whitespace
 
 <>. {
-  //console.error('caught error');
   return 'ERROR';
 } // anything else unexpected
