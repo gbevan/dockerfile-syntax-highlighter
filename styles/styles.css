@@ -8,8 +8,9 @@
 
 .cm-from {
   background-color: rgba(72, 72, 154, 0.63);
+  border: 1px #9a9400 outset;
   border-radius: 3px;
-  color: white;
+  color: yellow;
   font-weight: bold;
   padding-left: 3px;
   padding-right: 3px;
@@ -18,8 +19,9 @@
 
 .cm-maintainer {
   background-color: rgba(72, 72, 154, 0.63);
+  border: 1px #9a9400 outset;
   border-radius: 3px;
-  color: white;
+  color: yellow;
   font-weight: bold;
   padding-left: 3px;
   padding-right: 3px;
@@ -27,11 +29,21 @@
 }
 
 .cm-expose {
-  border: 1px #600000 solid;
-  border-radius: 3px;
   background-color:rgba(167, 65, 65, 0.46);
+  border: 1px #9a9400 outset;
+  border-radius: 3px;
   color: yellow;
-  font-weight: bold;
+  font-weight: normal;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+.cm-stopsignal {
+  background-color:rgba(65, 69, 167, 0.46);
+  border: 1px #9a9400 outset;
+  border-radius: 3px;
+  color: yellow;
+  font-weight: normal;
   padding-left: 3px;
   padding-right: 3px;
 }
@@ -41,7 +53,7 @@
 }
 
 .cm-debug2 {
-  color: #b90000;
   background-color: yellow;
+  color: #b90000;
 }
 

@@ -18,8 +18,11 @@ ENV VAR1=data1 \
 ENV VAR3 data1 \
   data2 \
   continued
-ENV VAR2="data1"
-
+ENV VAR2="data1" sdfsdf=sdfsdf
+ARG var1
+ARG var2=value sdfsdf=-bsdfds sdfsdf="sdfsdf\
+sdfsdfsf"
+RUN
 # Dependencies
 RUN \
     apt-get -yq update && \
@@ -115,16 +118,19 @@ EXPOSE 3000 3443 #comment
 
 EXPOSE 3JHGHJ000 3443 JHGJH987987dkjfhksd*^* #comment
 
+STOPSIGNAL 9
+STOPSIGNAL SIGKILL
+
 LABEL "abcdfefsdf" = "this is a string" # comment
 LABEL 'this is another' = skdfsldkfj
 LABEL "this ''''' is a string" = yup
 LABEL "this \"
 is error"
 
-LABEL "this
+LABEL "this\
 is multiline"
 
-LABEL \"this was
+LABEL "this is
 errors
 on multiline""
 

@@ -4,7 +4,7 @@
 
 %%
 
-directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|VOLUME|USER|WORKDIR|ONBUILD|LABEL)
+directive = (FROM|MAINTAINER|ENV|ARG|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|VOLUME|USER|WORKDIR|ONBUILD|LABEL|STOPSIGNAL)
 
 %%
 
@@ -36,7 +36,7 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
 
   var s = this.getState();
   if (!this.input.more()) {
-    if (s.match(/^(ENV|LABEL)$/)) {
+    if (s.match(/^(ENV|ARG|LABEL)$/)) {
       this.popState();
     }
   }
@@ -59,7 +59,7 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   this.popState();
   this.stringAs = null;
   var s = this.getState();
-  if (s.match(/^(ENV)$/)) {
+  if (s.match(/^(ENV|ARG)$/)) {
     this.popState();
   }
   return 'COMMENT';
@@ -73,7 +73,7 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
     this.popState();
     this.stringAs = null;
     var s = this.getState();
-    if (s.match(/^(ENV)$/)) {
+    if (s.match(/^(ENV|ARG)$/)) {
       this.popState();
     }
   }
@@ -88,7 +88,7 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   this.popState();
   this.stringAs = null;
   var s = this.getState();
-  if (s.match(/^(ENV)$/)) {
+  if (s.match(/^(ENV|ARG)$/)) {
     this.popState();
   }
   return 'COMMENT';
@@ -102,7 +102,7 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
     this.popState();
     this.stringAs = null;
     var s = this.getState();
-    if (s.match(/^(ENV)$/)) {
+    if (s.match(/^(ENV|ARG)$/)) {
       this.popState();
     }
   }
@@ -111,9 +111,6 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
     this.popState();
     this.stringAs = null;
     var s = this.getState();
-    //if (s.match(/^(ENV)$/)) {
-    //  this.popState();
-    //}
   }
   return tok;
 }
@@ -195,6 +192,88 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   return null;
 }
 <ENVVAL>[^"'] {
+  this.less(1);
+  this.popState();
+  this.pushState('UNQUOTEDSTRING2SPACE');
+  return 'STRING';
+}
+
+/********************************************************************
+ * ARG directive
+ */
+<ARG>\s+ {
+  if (this.input.more()) {
+    this.pushState('ARGDEF');
+  } else {
+    this.popState()
+  }
+  return null;
+}
+<ARG>\s*#.* {
+  this.popState();
+  return 'COMMENT';
+}
+<ARG>\\. {
+  this.popState();
+  return 'ERROR';
+}
+<ARG>\\ {
+  return null;
+}
+<ARG>. {
+  this.less(1);
+  if (!this.input.sol()) {
+    this.popState();
+    return 'ERROR';
+  }
+  this.pushState('ARGDEF');
+  return null;
+}
+<ARGDEF>\w+ {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('ARGASSIGN');
+  } else {
+    // pop out of ARG
+    this.popState();
+  }
+  return 'DEF';
+}
+<ARGDEF>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
+}
+<ARGASSIGN>\s*=\s* {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('ARGVAL');
+  } else {
+    // pop out of ARG
+    this.popState();
+  }
+  return null;
+}
+<ARGASSIGN>\s+ {
+  this.popState();
+  if (this.input.more()) {
+    this.pushState('UNQUOTEDSTRING');
+  } else {
+    // pop out of ARG
+    this.popState();
+  }
+  return null;
+}
+<ARGASSIGN>. {
+  return 'ERROR';
+}
+<ARGVAL>["'] {
+  this.less(1);
+  this.popState();
+  this.pushState('STARTQUOTEDSTRING');
+  return null;
+}
+<ARGVAL>[^"'] {
   this.less(1);
   this.popState();
   this.pushState('UNQUOTEDSTRING2SPACE');
@@ -316,6 +395,28 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   return 'EXPOSE';
 }
 
+/********************************************************************
+ * STOPSIGNAL directive
+ */
+<STOPSIGNAL>\s+ {
+  if (this.input.more()) {
+    this.pushState('STOPSIGNALDEF');
+  }
+  return null;
+}
+<STOPSIGNAL>\s*#.* {
+  this.popState();
+  return 'COMMENT';
+}
+<STOPSIGNAL>. {
+  this.less(1);
+  this.popState();
+  return 'ERROR';
+}
+<STOPSIGNALDEF>\w+ {
+  this.popState();
+  return 'STOPSIGNAL';
+}
 
 /********************************************************************
  * Match all directives and enter respective states
@@ -327,11 +428,15 @@ directive = (FROM|MAINTAINER|ENV|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOINT|V
   if (d.match(/RUN|CMD/i)) {
     this.localMode = this.bashMode;
     this.localState = this.bashMode.startState();
+
+  } else if (d.match(/ONBUILD/)) {
+    this.popState();
+
   } else {
-    if (d.match(/FROM|MAINTAINER|EXPOSE/i)) {
+    if (d.match(/FROM|MAINTAINER|EXPOSE|STOPSIGNAL/i)) {
       this.stringAs = d.toLowerCase();
     }
-    if (!d.match(/ENV|LABEL|EXPOSE/i)) {
+    if (!d.match(/ENV|ARG|LABEL|EXPOSE|STOPSIGNAL/i)) {
       d = 'DOCKDIR';
     }
     this.pushState(d.toUpperCase());
