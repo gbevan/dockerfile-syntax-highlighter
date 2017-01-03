@@ -390,9 +390,16 @@ directive = (FROM|MAINTAINER|ENV|ARG|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOI
   this.popState();
   return 'ERROR';
 }
-<EXPOSEDEF>\w+ {
+
+<EXPOSEDEF>[\w${}]+ {
   this.popState();
   return 'EXPOSE';
+}
+<EXPOSEDEF>. {
+  this.less(1);
+  this.popState();
+  this.popState();
+  return 'ERROR';
 }
 
 /********************************************************************
@@ -416,6 +423,12 @@ directive = (FROM|MAINTAINER|ENV|ARG|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOI
 <STOPSIGNALDEF>\w+ {
   this.popState();
   return 'STOPSIGNAL';
+}
+<STOPSIGNALDEF>. {
+  this.less(1);
+  this.popState();
+  this.popState();
+  return 'ERROR';
 }
 
 /********************************************************************
