@@ -156,3 +156,6 @@ EXPOSE ${aaa}
 EXPOSE *${aaa}  # invalid char shows error
 ENV asdasd
 ENV asasd='*234234' # issue this shouldnt be highlighted as an EXPOSE here
+
+EXPOSE ${aaa}
+ENV asasd=*234234 # issue this shouldnt be highlighted as an EXPOSE here

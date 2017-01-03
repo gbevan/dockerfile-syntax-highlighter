@@ -448,6 +448,8 @@ directive = (FROM|MAINTAINER|ENV|ARG|ADD|ENTRYPOINT|EXPOSE|RUN|CMD|COPY|ENTRYPOI
   } else {
     if (d.match(/FROM|MAINTAINER|EXPOSE|STOPSIGNAL/i)) {
       this.stringAs = d.toLowerCase();
+    } else {
+      this.stringAs = null;
     }
     if (!d.match(/ENV|ARG|LABEL|EXPOSE|STOPSIGNAL/i)) {
       d = 'DOCKDIR';
