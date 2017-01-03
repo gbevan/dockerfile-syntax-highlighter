@@ -149,3 +149,10 @@ LABEL "LAB1"="VAL1" "LAB2"="VAL2"
     #comment
 
 This is a syntax error - in red
+
+# https://github.com/gbevan/dockerfile-syntax-highlighter/issues/1
+ARG port
+EXPOSE ${aaa}
+EXPOSE *${aaa}  # invalid char shows error
+ENV asdasd
+ENV asasd='*234234' # issue this shouldnt be highlighted as an EXPOSE here
