@@ -3,15 +3,16 @@
   "title": "Enhanced Dockerfile Syntax Highlighter",
   "description": "Enhanced Dockerfile Syntax Highlighter with nested Shell highlighting. Rewritten to use the Jacob Lexer under the hood for a more robust (and easier to maintain) Lexical Tokenizer. Please raise any issues via the project's GitHub home page.",
   "homepage": "https://github.com/gbevan/dockerfile-syntax-highlighter",
+  "bugs": "https://github.com/gbevan/dockerfile-syntax-highlighter/issues",
   "keywords": [
+    "brackets-extension",
     "docker",
     "dockerfile",
     "shell",
     "syntax",
-    "highlighting",
-    "brackets-extension"
+    "highlighting"
   ],
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": {
     "name": "Graham Lee Bevan",
     "email": "graham.bevan@ntlworld.com",
@@ -23,5 +24,9 @@
   }],
   "engines": {
     "brackets": ">=1.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gbevan/dockerfile-syntax-highlighter.git"
   }
 }
