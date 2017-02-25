@@ -18,10 +18,7 @@
     "email": "graham.bevan@ntlworld.com",
     "url": "https://github.com/gbevan"
   },
-  "licenses": [{
-    "type": "Apache 2.0",
-    "url": "http://www.apache.org/licenses/"
-  }],
+  "license": "Apache-2.0",
   "engines": {
     "brackets": ">=1.7.0"
   },
