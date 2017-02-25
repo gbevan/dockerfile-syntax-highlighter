@@ -8,7 +8,8 @@
     "dockerfile",
     "shell",
     "syntax",
-    "highlighting"
+    "highlighting",
+    "brackets-extension"
   ],
   "version": "1.0.2",
   "author": {
@@ -21,6 +22,6 @@
     "url": "http://www.apache.org/licenses/"
   }],
   "engines": {
-    "brackets": ">=1.0.0"
+    "brackets": ">=1.7.0"
   }
 }
