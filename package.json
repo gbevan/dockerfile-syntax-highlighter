@@ -12,7 +12,7 @@
     "syntax",
     "highlighting"
   ],
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": {
     "name": "Graham Lee Bevan",
     "email": "graham.bevan@ntlworld.com",
@@ -25,5 +25,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/gbevan/dockerfile-syntax-highlighter.git"
+  },
+  "dependencies": {
+    "jacob": "^1.0.5"
+  },
+  "scripts": {
+    "install": "node node_modules/.bin/jacob -t Dockerfile.jacoblex -l dockerlex.js"
   }
 }

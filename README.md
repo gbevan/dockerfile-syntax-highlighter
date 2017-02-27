@@ -32,7 +32,7 @@ on GitHub.
 
 You will need the jacob Lexical Tokenizer installed:
 
-    $ npm install jacob
+    $ npm install --save jacob
 
 To generate the lexer, run:
 
