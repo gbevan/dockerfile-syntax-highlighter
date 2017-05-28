@@ -81,24 +81,26 @@ define(function (require, exports, module) {
       if (state.localMode) {
         var res = state.localMode.token(stream, state.localState);
         if (stream.eol()) {
-          if (stream.current() !== '\\') {
+//          console.log('localMode eol stream:', stream);
+          if (!stream.string.match(/^\s*(#.*|)$/) && stream.current() !== '\\') {
+//            console.log('resetting localState line:', this.line);
             state.localState = state.localMode = null;
           }
         }
         return res;
       }
 
-      //console.log('lexer:', Object.create(state));
-      //console.log('lexer states:', state.state);
-      //console.log('stream b4 nextToken:', stream);
+//      console.log('lexer:', Object.create(state));
+//      console.log('lexer states:', state.state);
+//      console.log('stream b4 nextToken:', stream);
       state.input = stream;
       var token = state.nextToken();
-      //console.log('stream after nextToken:', stream, 'stringAs:', state.stringAs);
+//      console.log('stream after nextToken:', stream, 'stringAs:', state.stringAs);
 
       if (token.name === 'STRING' && state.stringAs) {
         token.name = state.stringAs;
       }
-      //console.log('token:', token);
+//      console.log('token:', token);
 
       return (token.name ? token.name.toLowerCase() : null);
     };

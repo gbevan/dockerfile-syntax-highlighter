@@ -36,6 +36,8 @@ RUN \
     useradd --create-home -s /bin/bash mean && \
     su - mean -c "mkdir -p .ssh; chmod 700 .ssh" && \
     echo -n "mean:`openssl rand -base64 15`" | chpasswd && \
+
+    # this is a valid comment
     su - mean -c "touch .hushlogin" && \
     mkdir -p /etc/sudoers.d && \
     echo "mean ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/mean && \

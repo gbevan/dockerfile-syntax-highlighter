@@ -27,14 +27,21 @@ RUN \
     apt-get dist-upgrade -yq && \
     apt-get install -yqq wget aptitude htop vim vim-puppet git traceroute dnsutils \
       curl ssh sudo psmisc gcc make build-essential libfreetype6 libfontconfig \
+      #comment 1
+
       augeas-tools tree tcpdump && \
     mkdir /var/run/sshd && \
     sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config && \
     sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config && \
+
+    # comment 2
+
     useradd --create-home -s /bin/bash mean && \
     su - mean -c "mkdir -p .ssh; chmod 700 .ssh" && \
     echo -n "mean:`openssl rand -base64 15`" | chpasswd && \
     su - mean -c "touch .hushlogin" && \
+
+    # comment 3
     mkdir -p /etc/sudoers.d && \
     echo "mean ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/mean && \
     chmod 0440 /etc/sudoers.d/mean && \
